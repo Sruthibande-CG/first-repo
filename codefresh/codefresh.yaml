@@ -1,0 +1,31 @@
+version: "1.0"
+#stages can help you organize your steps in stages
+stages:
+  - "clone"
+  - "get_helm_charts"
+
+steps:
+  clone:
+    title: "Cloning main repository"
+    stage: "clone"
+    type: git-clone
+    repo: ${{GIT_REPOSITORY}}/${{GIT_WORKING_DIR}}
+    working_directory: ${{CF_VOLUME_PATH}}/${{CF_PIPELINE_NAME}}
+    revision: ${{GIT_REVISION}}
+
+  get_helm_charts:
+    title: Get Helm Charts
+    stage: get_helm_charts
+    type: build
+    disable_push: true
+    working_directory: ${{CF_VOLUME_PATH}}/{{CF_PIPELINE_NAME}}/${{GIT_WORKING_DIR}}
+    dockerfile: 'Dockerfile'
+    build_arguments:
+      - connection=${{CLUSTER_ENDPOINT}}
+      - namespace=${{NAMESPACE}}
+      - bearertoken=${{BEARER_TOKEN}}
+      - app=${{APP}}
+      - artifactorytoken=${{ARTIFACTORY_TOKEN}}
+    arguments:
+      image_name: ${{DOCKER_IMG_LOWER}}
+      tag: ${{DOCKER_TAG}}
